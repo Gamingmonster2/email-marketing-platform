@@ -1,0 +1,116 @@
+---
+import { getCollection } from 'astro:content';
+
+const posts = await getCollection('blog');
+// ترتيب تصاعدي من الأحدث للأقدم
+const sortedPosts = posts.sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
+---
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>الرئيسية | email.com.ly</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        header h1 {
+            font-size: 2.5rem;
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+        header p {
+            color: #64748b;
+            font-size: 1.1rem;
+        }
+        /* نظام الشبكة الاستراتيجي للمقالات */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        .article-card {
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+            color: inherit;
+        }
+        .article-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        }
+        .card-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .card-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        .card-title {
+            font-size: 1.25rem;
+            color: #0f172a;
+            margin: 0 0 12px 0;
+            line-height: 1.4;
+        }
+        .card-date {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-top: auto;
+        }
+        .empty-state {
+            text-align: center;
+            grid-column: 1 / -1;
+            color: #64748b;
+            font-size: 1.2rem;
+            padding: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>منصة التسويق عبر البريد الإلكتروني</h1>
+            <p>محتوى استراتيجي متجدد مخصص للمطورين ورواد الأعمال</p>
+        </header>
+
+        <main class="grid-layout">
+            {sortedPosts.length > 0 ? (
+                sortedPosts.map((post) => (
+                    <a href={`/${post.slug}`} class="article-card">
+                        {post.data.image && <img src={post.data.image} alt={post.data.title} class="card-img" />}
+                        <div class="card-body">
+                            <h2 class="card-title">{post.data.title}</h2>
+                            <span class="card-date">تاريخ النشر: {post.data.date}</span>
+                        </div>
+                    </a>
+                ))
+            ) : (
+                <div class="empty-state">المستودع جاهز. بانتظار تشغيل الوكيل الأول لضخ المقالات!</div>
+            )}
+        </main>
+    </div>
+</body>
+</html>
