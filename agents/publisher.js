@@ -24,15 +24,53 @@ const keywordsPool = [
     "كتابة نصوص رسائل بريدية تقنع العميل بالشراء الفوري"
 ];
 
+// دالة جلب صورة ديناميكية مستهدفة بناءً على الكلمة المفتاحية المستخرجة
+async function getDynamicImage(keyword) {
+    if (!process.env.PEXELS_API_KEY) {
+        return "https://images.pexels.com/photos/1591056/pexels-photo-1591056.jpeg"; // الصورة الاحتياطية الافتراضية
+    }
+    try {
+        const searchQuery = `email marketing ${keyword}`;
+        const response = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(searchQuery)}&per_page=1`, {
+            headers: { 'Authorization': process.env.PEXELS_API_KEY }
+        });
+        const data = await response.json();
+        return data.photos[0]?.src?.large || "https://images.pexels.com/photos/1591056/pexels-photo-1591056.jpeg";
+    } catch (error) {
+        return "https://images.pexels.com/photos/1591056/pexels-photo-1591056.jpeg";
+    }
+}
+
 async function generateArticle() {
     try {
-        // اختيار كلمة مفتاحية عشوائياً من المسبح التلقائي
+        // اختيار كلمة مفتاحية عشوائياً من المسبح التلقائي الخاص بك
         const randomIndex = Math.floor(Math.random() * keywordsPool.length);
         const selectedKeyword = keywordsPool[randomIndex];
 
         console.log(`🚀 الموضوع المختار لليوم: ${selectedKeyword}`);
 
-        // استدعاء نموذج الـ 70B القوي المتاح في حسابك لصياغة المقال
+        // 1. استدعاء النموذج السريع لتوليد كلمة بحث إنجليزية تناسب الصورة منعاً لظهور صور عشوائية
+        const keywordResponse = await groq.chat.completions.create({
+            messages: [
+                {
+                    role: 'system',
+                    content: 'You are an SEO expert. Read the Arabic email marketing topic and output exactly one or two English keywords suitable for finding a professional business/tech photo on Pexels. Output only the keywords, no explanation, no quotes.'
+                },
+                {
+                    role: 'user',
+                    content: selectedKeyword
+                }
+            ],
+            model: MODEL_FAST,
+        });
+
+        const extractedKeyword = keywordResponse.choices[0]?.message?.content?.trim() || 'newsletter';
+        console.log(`🔍 الكلمة المفتاحية المستخرجة للبحث عن الصورة: ${extractedKeyword}`);
+
+        // 2. جلب رابط الصورة المستهدفة من Pexels
+        const imageUrl = await getDynamicImage(extractedKeyword);
+
+        // 3. استدعاء نموذج الـ 70B القوي المتاح في حسابك لصياغة المقال بالكامل
         const response = await groq.chat.completions.create({
             messages: [
                 {
@@ -59,17 +97,17 @@ async function generateArticle() {
 
         const dateStr = new Date().toISOString().split('T')[0];
 
-        // قالب Markdown النهائي الجاهز للبناء في Astro
+        // قالب Markdown النهائي المدمج بالصورة الديناميكية الجديدة وجاهز للبناء في Astro
         const fileData = `---
 title: "${selectedKeyword}"
 date: "${dateStr}"
-image: "https://images.pexels.com/photos/1591056/pexels-photo-1591056.jpeg"
+image: "${imageUrl}"
 ---
 
 ${articleContent}`;
 
         fs.writeFileSync(path.join(directoryPath, `${slug}.md`), fileData);
-        console.log(`✅ تم توليد المقال بنجاح وحفظه باستخدام النموذج الخاص بك: ${slug}.md`);
+        console.log(`✅ تم توليد المقال بنجاح وصورته مطابقة تماماً للمجال المعرفي: ${slug}.md`);
 
     } catch (error) {
         console.error('❌ خطأ أثناء توليد المقال:', error);
