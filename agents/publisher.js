@@ -3,14 +3,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import 'dotenv/config';
 
-// تهيئة عميل Groq باستخدام المفتاح السري الممرر من البيئة
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-// النماذج المستخرجة من حسابك الخاص
-const MODEL_WRITER = 'llama-3.3-70b-versatile'; // النموذج القوي للكتابة الاحترافية بالسيو
-const MODEL_FAST = 'llama-3.1-8b-instant';     // النموذج السريع للمهام الإضافية
+const MODEL_WRITER = 'llama-3.3-70b-versatile'; 
+const MODEL_FAST = 'llama-3.1-8b-instant';     
 
-// 10 كلمات ومواضيع مفتاحية استراتيجية يبدأ بها المحرك العمل تلقائياً
 const keywordsPool = [
     "استراتيجيات زيادة معدل فتح الرسائل البريدية (Open Rate)",
     "كيفية بناء قائمة بريدية (Email List) متفاعلة من الصفر",
@@ -24,10 +21,16 @@ const keywordsPool = [
     "كتابة نصوص رسائل بريدية تقنع العميل بالشراء الفوري"
 ];
 
-// دالة جلب صورة ديناميكية مستهدفة بناءً على الكلمة المفتاحية المستخرجة
+// مسبح الكتاب الثلاثة المختارين مع صورهم الشخصية المصغرة الاحترافية
+const authorsPool = [
+    { name: "أحمد بالخير", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150" },
+    { name: "اخليف المهدي", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150" },
+    { name: "سيف الأمير", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&h=150" }
+];
+
 async function getDynamicImage(keyword) {
     if (!process.env.PEXELS_API_KEY) {
-        return "https://images.pexels.com/photos/1591056/pexels-photo-1591056.jpeg"; // الصورة الاحتياطية الافتراضية
+        return "https://images.pexels.com/photos/1591056/pexels-photo-1591056.jpeg"; 
     }
     try {
         const searchQuery = `email marketing ${keyword}`;
@@ -43,13 +46,19 @@ async function getDynamicImage(keyword) {
 
 async function generateArticle() {
     try {
-        // اختيار كلمة مفتاحية عشوائياً من المسبح التلقائي الخاص بك
         const randomIndex = Math.floor(Math.random() * keywordsPool.length);
         const selectedKeyword = keywordsPool[randomIndex];
 
-        console.log(`🚀 الموضوع المختار لليوم: ${selectedKeyword}`);
+        // اختيار كاتب عشوائي من القائمة لتوزيع الأدوار وتغيير الهوية
+        const randomAuthorIndex = Math.floor(Math.random() * authorsPool.length);
+        const selectedAuthor = authorsPool[randomAuthorIndex];
 
-        // 1. استدعاء النموذج السريع لتوليد كلمة بحث إنجليزية تناسب الصورة منعاً لظهور صور عشوائية
+        console.log(`🚀 الموضوع المختار: ${selectedKeyword}`);
+        console.log(`✍️ الكاتب الحالي: ${selectedAuthor.name}`);
+
+        // حفظ اسم الكاتب في ملف نصي مؤقت ليقرأه نظام الـ GitHub Workflow لاحقاً
+        fs.writeFileSync('last_author.txt', selectedAuthor.name);
+
         const keywordResponse = await groq.chat.completions.create({
             messages: [
                 {
@@ -65,17 +74,13 @@ async function generateArticle() {
         });
 
         const extractedKeyword = keywordResponse.choices[0]?.message?.content?.trim() || 'newsletter';
-        console.log(`🔍 الكلمة المفتاحية المستخرجة للبحث عن الصورة: ${extractedKeyword}`);
-
-        // 2. جلب رابط الصورة المستهدفة من Pexels
         const imageUrl = await getDynamicImage(extractedKeyword);
 
-        // 3. استدعاء نموذج الـ 70B القوي المتاح في حسابك لصياغة المقال بالكامل
         const response = await groq.chat.completions.create({
             messages: [
                 {
                     role: 'system',
-                    content: 'أنت خبير سيو (SEO) محترف وكاتب محتوى تسويقي متخصص في البريد الإلكتروني. اكتب مقالاً غنياً وعملياً باللغة العربية ومقسماً بعناوين فرعية جذابة ونقاط واضحة تلائم أصحاب الشركات والمطورين.'
+                    content: `أنت كاتب محتوى خبير ومحترف واسمك هو (${selectedAuthor.name}). اكتب مقالاً غنياً باللغة العربية ومقسماً بعناوين فرعية جذابة تلائم أصحاب الشركات، واختم المقال بعبارة ترحيبية قصيرة تعبر عن هويتك ككاتب.`
                 },
                 {
                     role: 'user',
@@ -86,8 +91,6 @@ async function generateArticle() {
         });
 
         const articleContent = response.choices[0]?.message?.content || '';
-        
-        // توليد اسم الرابط (Slug) بناءً على الوقت الحالي لمنع التداخل
         const slug = `article-${Date.now()}`;
         const directoryPath = path.join(process.cwd(), 'src/content/blog');
         
@@ -97,17 +100,19 @@ async function generateArticle() {
 
         const dateStr = new Date().toISOString().split('T')[0];
 
-        // قالب Markdown النهائي المدمج بالصورة الديناميكية الجديدة وجاهز للبناء في Astro
+        // حقن بيانات الكاتب وصورته داخل ترويسة المقال ليعرضها قالب الواجهة
         const fileData = `---
 title: "${selectedKeyword}"
 date: "${dateStr}"
 image: "${imageUrl}"
+author: "${selectedAuthor.name}"
+authorImage: "${selectedAuthor.avatar}"
 ---
 
 ${articleContent}`;
 
         fs.writeFileSync(path.join(directoryPath, `${slug}.md`), fileData);
-        console.log(`✅ تم توليد المقال بنجاح وصورته مطابقة تماماً للمجال المعرفي: ${slug}.md`);
+        console.log(`✅ تم توليد المقال وحفظه بنجاح بقلم: ${selectedAuthor.name}`);
 
     } catch (error) {
         console.error('❌ خطأ أثناء توليد المقال:', error);
