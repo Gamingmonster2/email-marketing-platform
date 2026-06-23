@@ -1,0 +1,60 @@
+name: Run AI Agents
+
+on:
+  schedule:
+    - cron: '0 8 * * *' # ينطلق مبدئياً الساعة 10 صباحاً بتوقيت ليبيا
+  workflow_dispatch:
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Random Delay (تأخير عشوائي بشري يصل إلى 5 ساعات)
+        run: |
+          DELAY=$(shuf -i 1-18000 -n 1)
+          echo "جاري الانتظار لمدة $DELAY ثانية لمحاكاة النشر البشري في أوقات متغيرة..."
+          sleep $DELAY
+
+      - name: Run Publisher Agent (توليد مقال جديد)
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+        run: node agents/publisher.js
+
+      - name: Run Updater Agent (مراجعة وتحديث المقالات القديمة)
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+        run: node agents/updater.js
+
+      - name: Commit and Push changes
+        run: |
+          # قراءة اسم الكاتب الذي اختاره الوكيل اليوم لتوثيقه في جيت هب
+          if [ -f last_author.txt ]; then
+            AUTHOR_NAME=$(cat last_author.txt)
+          else
+            AUTHOR_NAME="Saif Agent Bot"
+          fi
+          
+          git config --global user.name "$AUTHOR_NAME"
+          git config --global user.email "agent@email.com.ly"
+          git add src/content/blog/
+          
+          if git diff --staged --quiet; then
+            echo "لا توجد مقالات جديدة أو تحديثات اليوم."
+          else
+            git commit -m "✍️ مقال جديد بقلم $AUTHOR_NAME"
+            git push
+          fi
