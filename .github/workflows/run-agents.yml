@@ -2,12 +2,15 @@ name: Run AI Agents
 
 on:
   schedule:
-    - cron: '0 8 * * *' # ينطلق مبدئياً الساعة 10 صباحاً بتوقيت ليبيا
+    # ينطلق الساعة 10 صباحاً بتوقيت ليبيا، يوم نعم ويوم لا (كل 48 ساعة)
+    - cron: '0 8 */2 * *'
   workflow_dispatch:
 
 jobs:
   build-and-run:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -16,24 +19,24 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Install dependencies
         run: npm install
 
-      - name: Random Delay (تأخير عشوائي بشري يصل إلى 5 ساعات)
+      - name: Smart Economical Delay (تأخير اقتصادي: من 30 ثانية إلى 5 دقائق)
         run: |
-          DELAY=$(shuf -i 1-18000 -n 1)
-          echo "جاري الانتظار لمدة $DELAY ثانية لمحاكاة النشر البشري في أوقات متغيرة..."
+          DELAY=$(shuf -i 30-300 -n 1)
+          echo "جاري الانتظار لمدة $DELAY ثانية لمحاكاة النشر البشري..."
           sleep $DELAY
 
-      - name: Run Publisher Agent (توليد مقال جديد)
+      - name: Run Publisher Agent
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
         run: node agents/publisher.js
 
-      - name: Run Updater Agent (مراجعة وتحديث المقالات القديمة)
+      - name: Run Updater Agent
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
@@ -41,7 +44,6 @@ jobs:
 
       - name: Commit and Push changes
         run: |
-          # قراءة اسم الكاتب الذي اختاره الوكيل اليوم لتوثيقه في جيت هب
           if [ -f last_author.txt ]; then
             AUTHOR_NAME=$(cat last_author.txt)
           else
@@ -53,7 +55,7 @@ jobs:
           git add src/content/blog/
           
           if git diff --staged --quiet; then
-            echo "لا توجد مقالات جديدة أو تحديثات اليوم."
+            echo "لا توجد مقالات جديدة اليوم."
           else
             git commit -m "✍️ مقال جديد بقلم $AUTHOR_NAME"
             git push
