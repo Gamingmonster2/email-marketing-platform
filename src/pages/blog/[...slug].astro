@@ -1,28 +1,140 @@
 ---
+
 import { getCollection, render } from 'astro:content';
 
 export async function getStaticPaths() {
-  const posts = await getCollection('blog');
-  return posts.map(post => ({
-    params: { slug: post.id },
-    props: { post },
-  }));
+const posts = await getCollection('blog');
+
+return posts.map(post => ({
+params: { slug: post.id },
+props: { post },
+}));
 }
 
 const { post } = Astro.props;
 const { Content } = await render(post);
----
+---------------------------------------
 
-<html>
-  <body>
-    <main style="max-width: 800px; margin: 0 auto; padding: 20px;">
-      <h1>{post.data.title}</h1>
-      <p><em>تاريخ النشر: {post.data.date}</em></p>
-      <img src={post.data.image} alt={post.data.title} style="width: 100%; height: auto;" />
-      
-      <article>
-        <Content />
-      </article>
-    </main>
-  </body>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>{post.data.title}</title>
+
+<meta
+name="description"
+content={`مقال احترافي حول ${post.data.title}`}
+/>
+
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f5f7fa;
+      color: #222;
+      margin: 0;
+      padding: 30px;
+      line-height: 1.9;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 2px 20px rgba(0,0,0,.08);
+    }
+
+    .featured-image {
+      width: 100%;
+      border-radius: 12px;
+      margin-bottom: 25px;
+    }
+
+    .author-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .author-box img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .date {
+      color: #666;
+      font-size: 14px;
+    }
+
+    article {
+      margin-top: 30px;
+    }
+
+    article h2,
+    article h3 {
+      margin-top: 35px;
+    }
+
+    article img {
+      max-width: 100%;
+      border-radius: 10px;
+    }
+
+    .related {
+      margin-top: 50px;
+      padding-top: 20px;
+      border-top: 1px solid #ddd;
+    }
+
+    .related h3 {
+      margin-bottom: 15px;
+    }
+
+    .related a {
+      display: block;
+      margin-bottom: 10px;
+      text-decoration: none;
+    }
+  </style>
+
+</head>
+
+<body>
+  <main class="container">
+
+```
+<img
+  src={post.data.image}
+  alt={post.data.title}
+  class="featured-image"
+/>
+
+<h1>{post.data.title}</h1>
+
+<div class="author-box">
+  <img
+    src={post.data.authorImage}
+    alt={post.data.author}
+  />
+
+  <div>
+    <strong>{post.data.author}</strong>
+    <div class="date">
+      تاريخ النشر: {post.data.date}
+    </div>
+  </div>
+</div>
+
+<article>
+  <Content />
+</article>
+```
+
+  </main>
+</body>
 </html>
