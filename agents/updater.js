@@ -18,23 +18,20 @@ async function updateOldArticles() {
             const filePath = path.join(directoryPath, file);
             let content = fs.readFileSync(filePath, 'utf-8');
 
-            // استخراج التاريخ والعنوان من المقال لقراءتهما
-            const dateMatch = content.match(/date:\s*"(.*?)"/);
             const titleMatch = content.match(/title:\s*"(.*?)"/);
 
-            if (dateMatch && titleMatch) {
-                const articleDate = new Date(dateMatch[1]);
+            if (titleMatch) {
                 const title = titleMatch[1];
                 
-                // حساب الفارق الزمني بالأيام
-                const diffTime = Math.abs(today - articleDate);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                // الاعتماد على وقت تعديل الملف على الهاردوير لضبط دقائق الفحص بدقة
+                const fileStats = fs.statSync(filePath);
+                const diffTime = Math.abs(today - fileStats.mtime);
+                const diffMinutes = Math.floor(diffTime / (1000 * 60));
 
-                // التحقق إذا مر على المقال 20 يوماً أو أكثر
-                if (diffDays >= 20) {
-                    console.log(`🔄 المقال "${title}" مر عليه ${diffDays} يوماً. يتم تحديثه الآن...`);
+                // التحقق إذا مر على إنشاء أو تعديل الملف 5 دقائق أو أكثر
+                if (diffMinutes >= 5) {
+                    console.log(`🔄 المقال "${title}" مر عليه ${diffMinutes} دقائق. يتم فحص التلوث اللغوي وتحديثه الآن...`);
 
-                    // عزل نص المقال الأصلي لإرساله للتطوير
                     const parts = content.split('---');
                     const originalBody = parts.slice(2).join('---').trim();
 
@@ -42,7 +39,11 @@ async function updateOldArticles() {
                         messages: [
                             {
                                 role: 'system',
-                                content: 'أنت خبير سيو (SEO) محترف. قم بإعادة صياغة، وتحسين، وتوسيع المقال العربي التالي لإثرائه بفقرات ومعلومات جديدة ومحدثة بالكامل مع الحفاظ على نفس الرابط والعنوان الرئيسي.'
+                                content: `أنت رئيس تحرير ومدقق لغوي صارم ومحترف SEO. قم بإعادة صياغة وتنقيح المقال العربي التالي وتوسيع معلوماته.
+شروط التطهير الإلزامية:
+1. احذف تماماً أي كلمات أو رموز لاتينية متداخلة مشوهة (مثل: roroke, sones, diem, lpwrop).
+2. صحح الأخطاء الإملائية الفادحة في الكلمات التقنية (مثل: تعديل "مجلد السام" إلى "مجلد السبام").
+3. حافظ على الهيكل العام، التنسيق النظيف لعناوين الماركداون، ونفس العنوان الرئيسي.`
                             },
                             {
                                 role: 'user',
@@ -50,12 +51,12 @@ async function updateOldArticles() {
                             }
                         ],
                         model: MODEL_WRITER,
+                        temperature: 0.2 // درجة حرارة منخفضة لضمان الالتزام بالتصحيح ومنع الهلوسة
                     });
 
                     const updatedBody = response.choices[0]?.message?.content || originalBody;
                     const dateStr = today.toISOString().split('T')[0];
 
-                    // إعادة بناء وحفظ المقال بنفس الاسم ولكن بتاريخ اليوم الجديد والنص المحدث
                     const updatedFileContent = `---
 title: "${title}"
 date: "${dateStr}"
@@ -65,7 +66,7 @@ image: "https://images.pexels.com/photos/1591056/pexels-photo-1591056.jpeg"
 ${updatedBody}`;
 
                     fs.writeFileSync(filePath, updatedFileContent);
-                    console.log(`✅ تم التحديث وإعادة النشر بنجاح: ${file}`);
+                    console.log(`✅ تم التطهير والتحديث بنجاح للملف: ${file}`);
                 }
             }
         }
