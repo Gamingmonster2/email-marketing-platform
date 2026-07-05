@@ -1,19 +1,19 @@
 ---
-
 import { getCollection, render } from 'astro:content';
 
 export async function getStaticPaths() {
-const posts = await getCollection('blog');
+  const posts = await getCollection('blog');
 
-return posts.map(post => ({
-params: { slug: post.id },
-props: { post },
-}));
+  return posts.map(post => ({
+    // نستخدم post.slug أو post.id لضمان التوافق التام مع نسخ Astro
+    params: { slug: post.slug || post.id },
+    props: { post },
+  }));
 }
 
 const { post } = Astro.props;
 const { Content } = await render(post);
----------------------------------------
+---
 
 <html lang="ar" dir="rtl">
 <head>
@@ -22,10 +22,10 @@ const { Content } = await render(post);
 
   <title>{post.data.title}</title>
 
-<meta
-name="description"
-content={`مقال احترافي حول ${post.data.title}`}
-/>
+  <meta
+    name="description"
+    content={`مقال احترافي حول ${post.data.title}`}
+  />
 
   <style>
     body {
@@ -107,33 +107,31 @@ content={`مقال احترافي حول ${post.data.title}`}
 <body>
   <main class="container">
 
-```
-<img
-  src={post.data.image}
-  alt={post.data.title}
-  class="featured-image"
-/>
+    <img
+      src={post.data.image}
+      alt={post.data.title}
+      class="featured-image"
+    />
 
-<h1>{post.data.title}</h1>
+    <h1>{post.data.title}</h1>
 
-<div class="author-box">
-  <img
-    src={post.data.authorImage}
-    alt={post.data.author}
-  />
+    <div class="author-box">
+      <img
+        src={post.data.authorImage}
+        alt={post.data.author}
+      />
 
-  <div>
-    <strong>{post.data.author}</strong>
-    <div class="date">
-      تاريخ النشر: {post.data.date}
+      <div>
+        <strong>{post.data.author}</strong>
+        <div class="date">
+          تاريخ النشر: {post.data.date}
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<article>
-  <Content />
-</article>
-```
+    <article>
+      <Content/>
+    </article>
 
   </main>
 </body>
