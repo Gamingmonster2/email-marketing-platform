@@ -8,6 +8,9 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const MODEL_WRITER = 'llama-3.3-70b-versatile'; 
 const MODEL_FAST = 'llama-3.1-8b-instant';     
 
+// دالة لالتقاط الأنفاس بين الطلبات لتجنب حظر الـ Rate Limit
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
 const keywordsPool = [
     "استراتيجيات زيادة معدل فتح الرسائل البريدية (Open Rate)",
     "كيفية بناء قائمة بريدية (Email List) متفاعلة من الصفر",
@@ -71,6 +74,8 @@ async function generateArticle() {
         const extractedKeyword = keywordResponse.choices[0]?.message?.content?.trim() || 'newsletter';
         const imageUrl = await getDynamicImage(extractedKeyword);
 
+        await delay(2000); // تأخير زمني بسيط لتجنب الحظر
+
         // ==========================================
         // 🧠 إدارة طبقة الذاكرة المحلية (Knowledge Layer)
         // ==========================================
@@ -90,7 +95,6 @@ async function generateArticle() {
             }
         }
 
-        // تحضير سياق الروابط القديمة لإرسالها للـ Editor
         const pastArticlesContext = pastArticles.length > 0
             ? pastArticles.map(art => `- المقال القديم: "${art.title}" -> رابط توجيهه: (/blog/${art.slug})`).join('\n')
             : "لا توجد مقالات سابقة في الموقع (هذا هو المقال الأول).";
@@ -112,6 +116,9 @@ async function generateArticle() {
         });
         const rawDraft = writerResponse.choices[0]?.message?.content || '';
 
+        console.log(`⏱️ راحة مؤقتة للسيرفر (5 ثواني)...`);
+        await delay(5000);
+
         // ==========================================
         // 🟡 المرحلة 2: REVIEWER AGENT (فحص الجودة الصارم والـ SEO)
         // ==========================================
@@ -129,9 +136,12 @@ async function generateArticle() {
                 },
                 { role: 'user', content: `إليك المسودة الخام لفحصها وتفنيد عيوبها:\n\n${rawDraft}` }
             ],
-            temperature: 0.1 // منطق بارد وجاف لمنع الهلوسة
+            temperature: 0.1 
         });
         const critiqueReport = reviewerResponse.choices[0]?.message?.content || '';
+
+        console.log(`⏱️ راحة مؤقتة للسيرفر (5 ثواني)...`);
+        await delay(5000);
 
         // ==========================================
         // 🔵 المرحلة 3: MASTER EDITOR (إعادة الصياغة الشاملة + الحقن الداخلي للروابط)
@@ -191,7 +201,6 @@ ${finalArticleContent}`;
         fs.writeFileSync(path.join(directoryPath, `${slug}.md`), fileData);
         console.log(`✅ [نجاح] تم توليد المقال المصقول وحفظه بنجاح بقلم: ${selectedAuthor.name}`);
 
-        // تحديث الذاكرة المحلية (Knowledge Layer) بالمقال الجديد لتقرأه المقالات القادمة
         pastArticles.push({
             title: selectedKeyword,
             slug: slug,
@@ -201,7 +210,8 @@ ${finalArticleContent}`;
         console.log(`💾 تم تحديث ملف الذاكرة المحلية knowledge.json بنجاح.`);
 
     } catch (error) {
-        console.error('❌ خطأ كارثي أثناء تشغيل المحرك الثلاثي للوكلاء:', error);
+        // تحسين مخرجات الخطأ لمعرفة ما إذا كانت مشكلة Tokens أو Rate Limit
+        console.error('❌ خطأ كارثي أثناء تشغيل المحرك الثلاثي للوكلاء:', error.message || error);
     }
 }
 
