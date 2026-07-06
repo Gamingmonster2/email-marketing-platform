@@ -8,7 +8,7 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const MODEL_WRITER = 'llama-3.3-70b-versatile'; 
 const MODEL_FAST = 'llama-3.1-8b-instant';     
 
-// دالة لالتقاط الأنفاس بين الطلبات لتجنب حظر الـ Rate Limit
+// دالة لالتقاط الأنفاس
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 const keywordsPool = [
@@ -24,10 +24,9 @@ const keywordsPool = [
     "كتابة نصوص رسائل بريدية تقنع العميل بالشراء الفوري"
 ];
 
+// تعديل: كاتب واحد فقط
 const authorsPool = [
-    { name: "أحمد بالخير", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150" },
-    { name: "اخليف المهدي", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150" },
-    { name: "سيف الأمير", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&h=150" }
+    { name: "أحمد بالخير", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150" }
 ];
 
 async function getDynamicImage(keyword) {
@@ -51,20 +50,20 @@ async function generateArticle() {
         const randomIndex = Math.floor(Math.random() * keywordsPool.length);
         const selectedKeyword = keywordsPool[randomIndex];
 
-        const randomAuthorIndex = Math.floor(Math.random() * authorsPool.length);
-        const selectedAuthor = authorsPool[randomAuthorIndex];
+        // اختيار الكاتب الوحيد في المصفوفة
+        const selectedAuthor = authorsPool[0];
 
         console.log(`🚀 الموضوع المختار: ${selectedKeyword}`);
         console.log(`✍️ الكاتب الحالي: ${selectedAuthor.name}`);
 
         fs.writeFileSync('last_author.txt', selectedAuthor.name);
 
-        // 1. استخراج الكلمات المفتاحية لصورة Pexels
+        // استخراج الكلمة المفتاحية للصورة
         const keywordResponse = await groq.chat.completions.create({
             messages: [
                 {
                     role: 'system',
-                    content: 'You are an SEO expert. Read the Arabic email marketing topic and output exactly one or two English keywords suitable for finding a professional business/tech photo on Pexels. Output only the keywords, no explanation, no quotes.'
+                    content: 'You are an SEO expert. Read the Arabic email marketing topic and output exactly one or two English keywords suitable for finding a professional business/tech photo on Pexels. Output only the keywords, no explanation.'
                 },
                 { role: 'user', content: selectedKeyword }
             ],
@@ -74,11 +73,9 @@ async function generateArticle() {
         const extractedKeyword = keywordResponse.choices[0]?.message?.content?.trim() || 'newsletter';
         const imageUrl = await getDynamicImage(extractedKeyword);
 
-        await delay(2000); // تأخير زمني بسيط لتجنب الحظر
+        await delay(2000);
 
-        // ==========================================
-        // 🧠 إدارة طبقة الذاكرة المحلية (Knowledge Layer)
-        // ==========================================
+        // إدارة الذاكرة المحلية للربط الداخلي
         const knowledgeDir = path.join(process.cwd(), 'src/content');
         const knowledgePath = path.join(knowledgeDir, 'knowledge.json');
         
@@ -97,93 +94,40 @@ async function generateArticle() {
 
         const pastArticlesContext = pastArticles.length > 0
             ? pastArticles.map(art => `- المقال القديم: "${art.title}" -> رابط توجيهه: (/blog/${art.slug})`).join('\n')
-            : "لا توجد مقالات سابقة في الموقع (هذا هو المقال الأول).";
+            : "لا توجد مقالات سابقة في الموقع.";
 
         // ==========================================
-        // 🟢 المرحلة 1: WRITER AGENT (توليد المسودة الخام)
+        // محرك الكتابة المباشر الصارم (SEO & Keyword Density)
         // ==========================================
-        console.log(`⏳ [1/3] جاري توليد المسودة الخام بواسطة الكاتب اللغوي...`);
+        console.log(`⏳ جاري توليد المقال مباشرة مع تطبيق معايير SEO صارمة وكثافة كلمات عالية...`);
         const writerResponse = await groq.chat.completions.create({
             model: MODEL_WRITER,
             messages: [
                 {
                     role: 'system',
-                    content: `أنت كاتب مسودات متقن وأكاديمي. اكتب مقالاً عربياً مفصلاً، ضخماً وغزيراً بالمعلومات حول الكلمة المفتاحية المحددة لتغطية كافة أبعادها الفنية. لا تهتم في هذه المرحلة بجمال الصياغة أو التكرار، ركز فقط على المحتوى الخام المكثف.`
+                    content: `أنت خبير SEO عالمي وكاتب محتوى محترف. اسمك (${selectedAuthor.name}).
+مهمتك كتابة مقال نهائي واحترافي باللغة العربية الفصحى مباشرة، بدون أي كلمات لاتينية مهشمة.
+
+⚠️ تعليمات صارمة جداً:
+1. زيادة كثافة الكلمة المفتاحية (Keyword Density): قم بتكرار الكلمة المفتاحية المستهدفة ومرادفاتها بكثافة عالية جداً عبر الفقرات، العناوين الفرعية، والخاتمة، على أن يبدو السياق طبيعياً واحترافياً.
+2. التنسيق: استخدم تنسيقات Markdown باحترافية تامة (عناوين H2 و H3، قوائم نقطية).
+3. الربط الداخلي (Internal Links): الذاكرة الحالية للمقالات السابقة هي:
+${pastArticlesContext}
+يجب عليك إلزامياً تضمين روابط المقالات السابقة سياقياً داخل النص باستخدام صيغة [اسم المقال](/blog/slug-المقال). إن تعذر دمجها سياقياً، أضف قسم "مقالات ذات صلة" في النهاية.
+4. اختم المقال بعبارة ترحيبية وتوقيع يحمل اسمك (${selectedAuthor.name}).`
                 },
-                { role: 'user', content: `اكتب مسودة كاملة وموسعة عن: ${selectedKeyword}` }
+                { role: 'user', content: `اكتب المقال حصرياً ومكثفاً حول هذه الكلمة المفتاحية: ${selectedKeyword}` }
             ],
-            temperature: 0.7
+            temperature: 0.5 // تقليل درجة الحرارة قليلاً للتركيز على الكلمات المفتاحية
         });
-        const rawDraft = writerResponse.choices[0]?.message?.content || '';
 
-        console.log(`⏱️ راحة مؤقتة للسيرفر (5 ثواني)...`);
-        await delay(5000);
+        const finalArticleContent = writerResponse.choices[0]?.message?.content || '';
 
-        // ==========================================
-        // 🟡 المرحلة 2: REVIEWER AGENT (فحص الجودة الصارم والـ SEO)
-        // ==========================================
-        console.log(`⏳ [2/3] جاري فحص الجودة واستخراج العيوب والتلوث اللاتيني...`);
-        const reviewerResponse = await groq.chat.completions.create({
-            model: MODEL_WRITER,
-            messages: [
-                {
-                    role: 'system',
-                    content: `أنت مدقق لغوي ومفتش سيو (SEO) صارم وعنيف. اقرأ المسودة الخام واستخرج "تقرير أخطاء ونقاط ضعف" فقط دون إعادة كتابة النص.
-ركز تماماً على:
-1. رصد الكلمات اللاتينية المهشمة والغريبة (مثل roroke, sones, lwrop) وتنبيه المحرر لحذفها أو تعريبها فوراً.
-2. تحديد الجمل الركيكة، التكرار الممل، وضعف تدفق الأفكار.
-3. التأكد من ملاءمة السرد لأصحاب الشركات والريادة.`
-                },
-                { role: 'user', content: `إليك المسودة الخام لفحصها وتفنيد عيوبها:\n\n${rawDraft}` }
-            ],
-            temperature: 0.1 
-        });
-        const critiqueReport = reviewerResponse.choices[0]?.message?.content || '';
-
-        console.log(`⏱️ راحة مؤقتة للسيرفر (5 ثواني)...`);
-        await delay(5000);
-
-        // ==========================================
-        // 🔵 المرحلة 3: MASTER EDITOR (إعادة الصياغة الشاملة + الحقن الداخلي للروابط)
-        // ==========================================
-        console.log(`⏳ [3/3] رئيس التحرير يدمج الروابط القديمة ويعيد صياغة المقال النهائي...`);
+        // الحفظ
         const slug = `article-${Date.now()}`;
         const dateStr = new Date().toISOString().split('T')[0];
-
-        const editorResponse = await groq.chat.completions.create({
-            model: MODEL_WRITER,
-            messages: [
-                {
-                    role: 'system',
-                    content: `أنت رئيس تحرير تنفيذي ومحترف سيو عالمي واسمك هو (${selectedAuthor.name}).
-مهمتك الكبرى هي دمج (المسودة الخام) مع (تقرير المراجع) لصياغة مقال عبقري، بليغ، وبلغة عربية فصحى ساحرة.
-
-⚠️ شروط الربط الداخلي الصارمة (Internal Linking):
-أنت تملك ذاكرة بالمقالات المنشورة سابقاً في الموقع وهي كالتالي:
-${pastArticlesContext}
-
-إذا وجدت بينها مقالات ترتبط سياقياً بفقرات المقال الحالي، يجب عليك زراعة روابطها بذكاء وانسيابية كاملة داخل النص بصيغة ماركداون: [اسم المقال القديم سياقياً](/blog/slug-المقال). 
-إذا لم تجد فرصة لربطها في ثنايا الفقرات، أضف قسماً فرعياً في نهاية المقال تحت عنوان "مقالات ذات صلة" وضع روابطها هناك، لضمان ترابط الموقع بالكامل وعناكب جوجل.
-
-⚠️ شروط التنسيق النهائي:
-1. خلو تام ومطلق من أي كلمات إنجليزية مهشمة مدمجة في الكلمات العربية.
-2. استخدام تنسيقات Markdown احترافية (عناوين H2 و H3، قوائم، نقاط).
-3. اختم المقال بعبارة ترحيبية قصيرة تمثلك بصفتك الكاتب الحالي (${selectedAuthor.name}).`
-                },
-                {
-                    role: 'user',
-                    content: `أنتج المقال النهائي لـ: "${selectedKeyword}".\n\nالمسودة الخام:\n${rawDraft}\n\nتقرير العيوب الواجب تدميرها:\n${critiqueReport}`
-                }
-            ],
-            temperature: 0.3
-        });
-
-        const finalArticleContent = editorResponse.choices[0]?.message?.content || '';
-
-        // ==========================================
-        // 💾 حفظ المقال النهائي وتحديث الذاكرة
-        // ==========================================
         const directoryPath = path.join(process.cwd(), 'src/content/blog');
+        
         if (!fs.existsSync(directoryPath)){
             fs.mkdirSync(directoryPath, { recursive: true });
         }
@@ -199,7 +143,7 @@ authorImage: "${selectedAuthor.avatar}"
 ${finalArticleContent}`;
 
         fs.writeFileSync(path.join(directoryPath, `${slug}.md`), fileData);
-        console.log(`✅ [نجاح] تم توليد المقال المصقول وحفظه بنجاح بقلم: ${selectedAuthor.name}`);
+        console.log(`✅ [نجاح] تم توليد المقال المكثف وحفظه بنجاح بقلم: ${selectedAuthor.name}`);
 
         pastArticles.push({
             title: selectedKeyword,
@@ -207,11 +151,10 @@ ${finalArticleContent}`;
             date: dateStr
         });
         fs.writeFileSync(knowledgePath, JSON.stringify(pastArticles, null, 2), 'utf8');
-        console.log(`💾 تم تحديث ملف الذاكرة المحلية knowledge.json بنجاح.`);
+        console.log(`💾 تم تحديث الذاكرة المحلية بنجاح.`);
 
     } catch (error) {
-        // تحسين مخرجات الخطأ لمعرفة ما إذا كانت مشكلة Tokens أو Rate Limit
-        console.error('❌ خطأ كارثي أثناء تشغيل المحرك الثلاثي للوكلاء:', error.message || error);
+        console.error('❌ خطأ أثناء تشغيل المحرك المباشر:', error.message || error);
     }
 }
 
