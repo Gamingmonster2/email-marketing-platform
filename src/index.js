@@ -237,11 +237,10 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // مسار إنشاء حساب جديد
     if (url.pathname === "/api/signup" && request.method === "POST") {
       try {
         const { email, password } = await request.json();
-        if (!email || !password) return new Response(JSON.stringify({ error: "Missing fields" }), { status: 400 });
+        if (!email || !password) return new Response(JSON.stringify({ error: "الرجاء إدخال كافة البيانات" }), { status: 400 });
 
         const id = crypto.randomUUID();
         const hashedPassword = await hashPassword(password);
@@ -252,11 +251,10 @@ export default {
 
         return new Response(JSON.stringify({ success: true }), { headers: { "Content-Type": "application/json" } });
       } catch (err) {
-        return new Response(JSON.stringify({ error: "الحساب موجود مسبقاً أو حدث خطأ في البيانات" }), { status: 400 });
+        return new Response(JSON.stringify({ error: "خطأ: " + err.message }), { status: 400, headers: { "Content-Type": "application/json" } });
       }
     }
 
-    // مسار تسجيل الدخول
     if (url.pathname === "/api/login" && request.method === "POST") {
       const { email, password } = await request.json();
       const hashedPassword = await hashPassword(password);
@@ -266,12 +264,11 @@ export default {
       ).bind(email.toLowerCase().trim(), hashedPassword).first();
 
       if (!user) {
-        return new Response(JSON.stringify({ error: "بيانات الاعتماد غير صحيحة" }), { status: 401 });
+        return new Response(JSON.stringify({ error: "بيانات تسجيل الدخول غير صحيحة" }), { status: 401, headers: { "Content-Type": "application/json" } });
       }
       return new Response(JSON.stringify({ success: true }), { headers: { "Content-Type": "application/json" } });
     }
 
-    // جلب الرسائل
     if (url.pathname === "/api/messages") {
       const email = url.searchParams.get("email");
       if (!email) return new Response(JSON.stringify({ error: "Missing email" }), { status: 400 });
@@ -284,6 +281,18 @@ export default {
     }
 
     return new Response(HTML_FRONTEND, { headers: { "Content-Type": "text/html; charset=UTF-8" } });
+  },
+
+  // دالة الحذف التلقائي التي تعمل بواسطة الـ Cron Trigger
+  async scheduled(event, env, ctx) {
+    // تحديد وقت الفحص: حذف الرسائل التي مر عليها أكثر من 24 ساعة
+    const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
+    
+    await env.DB.prepare(
+      "DELETE FROM messages WHERE created_at < ?"
+    ).bind(twentyFourHoursAgo).run();
+    
+    console.log("تم تنظيف الرسائل القديمة بنجاح.");
   },
 
   async email(message, env, ctx) {
