@@ -1,7 +1,0 @@
-name = "email-com-ly"
-compatibility_date = "2026-07-06"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "email_db"
-database_id = "سنقوم_بوضعه_هنا_بعد_إنشاء_القاعدة"
