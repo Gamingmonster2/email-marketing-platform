@@ -9,6 +9,7 @@ const HTML_FRONTEND = `
     <title>بريد 10 دقائق | بريد مؤقت عشوائي وآمن وسريع</title>
     <meta name="description" content="خدمة بريد 10 دقائق للحصول على بريد مؤقت عشوائي وآمن فوراً. استقبل رسائل التفعيل واحمي خصوصيتك من الإعلانات المزعجة بنقرة واحدة.">
     <meta name="keywords" content="بريد 10 دقائق, بريد مؤقت, ايميل وهمي, بريد عشوائي, مهمل, بريد سريع, انيموس">
+    <link rel="canonical" href="https://email.com.ly/" />
     <style>
         :root {
             --bg-main: #f8fafc;
@@ -39,14 +40,32 @@ const HTML_FRONTEND = `
             padding: 40px 30px;
             border-radius: 16px;
             border: 1px solid var(--border);
-            margin-top: 40px;
+            margin-top: 20px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
             box-sizing: border-box;
+            position: relative;
         }
+        
+        /* أيقونة الإيموجي ثلاثية الأبعاد المتحركة */
+        .brand-icon-wrapper {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .brand-icon {
+            font-size: 64px;
+            display: inline-block;
+            animation: pulse3d 3s ease-in-out infinite;
+            filter: drop-shadow(0 10px 15px rgba(2, 132, 199, 0.2));
+            user-select: none;
+        }
+        @keyframes pulse3d {
+            0%, 100% { transform: scale(1) translateY(0) rotate(0deg); }
+            50% { transform: scale(1.08) translateY(-8px) rotate(3deg); }
+        }
+
         h1 { text-align: center; font-size: 26px; margin: 0 0 8px 0; font-weight: 700; color: var(--text-main); }
         .subtitle { text-align: center; color: var(--text-muted); font-size: 14px; margin-bottom: 20px; }
         
-        /* العداد الزمني النظيف */
         .timer-box {
             text-align: center;
             margin-bottom: 20px;
@@ -126,10 +145,14 @@ const HTML_FRONTEND = `
 
 <div class="container">
     <div id="appInterface">
+        <!-- دمج الإيموجي ثلاثي الأبعاد المتفاعل نبضياً -->
+        <div class="brand-icon-wrapper">
+            <span class="brand-icon">✉️</span>
+        </div>
+        
         <h1>بريد 10 دقائق - بريد مؤقت سريع</h1>
         <div class="subtitle">أنشئ إيميل وهمي مؤقت ولحظي لحماية خصوصيتك ومنع التتبع</div>
         
-        <!-- صندوق العداد التنازلي المضاف حديثاً -->
         <div class="timer-box">
             <span>الوقت المتبقي لصلاحية هذا البريد:</span>
             <span class="timer-countdown" id="countdownClock">10:00</span>
@@ -174,7 +197,6 @@ const HTML_FRONTEND = `
     let isLoggedIn = localStorage.getItem('user_logged_in') === 'true';
     let myEmail = sessionStorage.getItem('current_temp_email');
     
-    // إعدادات العداد التنازلي لـ 10 دقائق
     let timeLeft = parseInt(sessionStorage.getItem('timer_left') || '600'); 
     let timerInterval;
 
@@ -209,7 +231,6 @@ const HTML_FRONTEND = `
             if (timeLeft <= 0) {
                 clearInterval(timerInterval);
                 document.getElementById('countdownClock').innerText = "منتهي";
-                // عند انتهاء الوقت يتم تصفير الجلسة لإنشاء إيميل جديد عند التحديث
                 sessionStorage.removeItem('current_temp_email');
                 sessionStorage.removeItem('timer_left');
                 return;
@@ -225,7 +246,7 @@ const HTML_FRONTEND = `
     }
 
     function extendTime() {
-        timeLeft += 600; // إضافة 10 دقائق إضافية (600 ثانية)
+        timeLeft += 600;
         sessionStorage.setItem('timer_left', timeLeft.toString());
         showToast('تم تمديد صلاحية البريد لـ 10 دقائق إضافية!');
     }
@@ -312,6 +333,30 @@ async function hashPassword(password) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+
+    // 1. توليد خريطة الموقع تلقائياً لعناكب البحث (Sitemap)
+    if (url.pathname === "/sitemap.xml") {
+      const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://email.com.ly/</loc>
+    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>`;
+      return new Response(sitemap, { headers: { "Content-Type": "application/xml; charset=UTF-8" } });
+    }
+
+    // 2. توليد ملف الروبوتات وتوجيهها نحو خريطة الموقع (robots.txt)
+    if (url.pathname === "/robots.txt") {
+      const robots = `User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://email.com.ly/sitemap.xml`;
+      return new Response(robots, { headers: { "Content-Type": "text/plain; charset=UTF-8" } });
+    }
 
     if (url.pathname === "/api/signup" && request.method === "POST") {
       try {
