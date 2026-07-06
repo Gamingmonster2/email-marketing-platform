@@ -1,0 +1,8 @@
+name = "email-com-ly"
+main = "src/index.js"
+compatibility_date = "2026-07-06"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "email_db"
+database_id = "ضع_هنا_الـ_ID_الخاص_بـ_D1"
