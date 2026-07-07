@@ -1,6 +1,5 @@
 import PostalMime from 'postal-mime';
 
-// مصفوفة الـ 60 كلمة المفتاحية الدوّارة والمحفزة لتوليد الإيميلات بالترتيب
 const PREMIUM_KEYWORDS = [
   "smart", "safe", "fast", "cool", "star", "hero", "pro", "flex", "prime", "max",
   "zone", "hub", "wave", "link", "net", "web", "tech", "pure", "gold", "vibe",
@@ -16,10 +15,10 @@ const HTML_FRONTEND = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بريد 10 دقائق | بريد مؤقت عشوائي وآمن وسريع</title>
-    <meta name="description" content="خدمة بريد 10 دقائق للحصول على بريد مؤقت عشوائي وآمن فوراً. استقبل رسائل التفعيل واحمي خصوصيتك من الإعلانات المزعجة بنقرة واحدة.">
-    <meta name="keywords" content="بريد 10 دقائق, بريد مؤقت, ايميل وهمي, بريد عشوائي, مهمل, بريد سريع, انيموس">
-    <link rel="canonical" href="https://email.com.ly/" />
+    <title>بريد 10 دقائق | بريد مؤقت عشوائي وآمن</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-main: #f8fafc;
@@ -29,12 +28,11 @@ const HTML_FRONTEND = `
             --border: #e2e8f0;
             --accent: #0284c7;
             --accent-hover: #0369a1;
-            --success: #10b981;
             --danger: #ef4444;
             --premium-color: #d97706;
         }
         body {
-            font-family: system-ui, -apple-system, sans-serif;
+            font-family: 'Cairo', sans-serif;
             background-color: var(--bg-main);
             color: var(--text-main);
             margin: 0;
@@ -54,58 +52,55 @@ const HTML_FRONTEND = `
             margin-top: 20px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
             box-sizing: border-box;
-            position: relative;
         }
         .brand-icon-wrapper { text-align: center; margin-bottom: 15px; }
         .brand-icon {
             font-size: 64px;
             display: inline-block;
             animation: pulse3d 3s ease-in-out infinite;
-            filter: drop-shadow(0 10px 15px rgba(2, 132, 199, 0.2));
-            user-select: none;
         }
         @keyframes pulse3d {
-            0%, 100% { transform: scale(1) translateY(0) rotate(0deg); }
-            50% { transform: scale(1.08) translateY(-8px) rotate(3deg); }
+            0%, 100% { transform: scale(1) translateY(0); }
+            50% { transform: scale(1.05) translateY(-5px); }
         }
-        h1 { text-align: center; font-size: 26px; margin: 0 0 8px 0; font-weight: 700; color: var(--text-main); }
-        .subtitle { text-align: center; color: var(--text-muted); font-size: 14px; margin-bottom: 20px; }
+        h1 { text-align: center; font-size: 28px; margin: 0 0 8px 0; font-weight: 900; }
+        .subtitle { text-align: center; color: var(--text-muted); font-size: 15px; margin-bottom: 25px; font-weight: 500; }
         
         .timer-box {
             text-align: center;
             margin-bottom: 20px;
-            font-size: 15px;
+            font-size: 16px;
             color: var(--text-muted);
             background: #f1f5f9;
-            padding: 10px;
+            padding: 12px;
             border-radius: 8px;
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 10px;
+            font-weight: 700;
         }
-        .timer-countdown { font-family: monospace; font-size: 20px; font-weight: bold; color: var(--danger); }
-        .extend-btn { background: var(--accent); color: white; border: none; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; }
+        .timer-countdown { font-family: monospace; font-size: 22px; font-weight: bold; color: var(--danger); letter-spacing: 1px; }
+        .extend-btn { background: var(--accent); color: white; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-family: 'Cairo', sans-serif; font-weight: 700; }
         .extend-btn:hover { background: var(--accent-hover); }
 
-        /* شريط التنبيه الخاص بالإيميل المميز */
         .premium-alert {
             display: none;
             background: #fef3c7;
             border: 1px solid #fde68a;
             color: var(--premium-color);
-            padding: 10px;
+            padding: 12px;
             border-radius: 8px;
             text-align: center;
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 15px;
+            font-weight: 700;
             margin-bottom: 15px;
         }
 
         .email-box {
             display: flex;
             background: var(--bg-main);
-            padding: 8px 8px 8px 16px;
+            padding: 10px 10px 10px 16px;
             border-radius: 12px;
             border: 1px solid var(--border);
             margin-bottom: 25px;
@@ -113,31 +108,33 @@ const HTML_FRONTEND = `
             justify-content: space-between;
             gap: 15px;
         }
-        .email-text { font-family: monospace; font-size: 19px; font-weight: bold; word-break: break-all; user-select: all; }
+        .email-text { font-family: monospace; font-size: 20px; font-weight: bold; word-break: break-all; user-select: all; letter-spacing: 1px; }
         .email-text.premium-active { color: var(--premium-color); }
 
-        button.main-btn { background: var(--text-main); color: #ffffff; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; }
+        button.main-btn { background: var(--text-main); color: #ffffff; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 15px; font-family: 'Cairo', sans-serif; }
         button.main-btn:hover { background: #1e293b; }
-        .refresh-btn { width: 100%; background: transparent; color: var(--text-main); border: 1px solid var(--border); margin-bottom: 25px; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600; }
-        .refresh-btn:hover { background: var(--bg-main); }
-        .messages-list { display: flex; flex-direction: column; gap: 12px; }
-        .message-card { background: #ffffff; padding: 18px; border-radius: 10px; cursor: pointer; border: 1px solid var(--border); }
-        .message-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
-        .message-subject { font-weight: 600; font-size: 15px; }
-        .message-body { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); color: #334155; font-size: 14px; line-height: 1.6; overflow-x: auto; }
-        .no-messages { text-align: center; color: var(--text-muted); padding: 30px 20px; border: 1px dashed var(--border); border-radius: 10px; }
         
-        /* جدار حماية التليجرام الجديد */
+        .refresh-btn { width: 100%; background: transparent; color: var(--text-main); border: 2px solid var(--border); margin-bottom: 25px; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 700; font-family: 'Cairo', sans-serif; font-size: 16px; transition: 0.2s; }
+        .refresh-btn:hover { background: var(--bg-main); border-color: var(--text-muted); }
+        
+        .messages-list { display: flex; flex-direction: column; gap: 12px; }
+        .message-card { background: #ffffff; padding: 18px; border-radius: 10px; cursor: pointer; border: 1px solid var(--border); transition: 0.2s; }
+        .message-card:hover { border-color: var(--accent); }
+        .message-meta { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; }
+        .message-subject { font-weight: 700; font-size: 16px; color: var(--text-main); }
+        .message-body { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); color: #334155; font-size: 15px; line-height: 1.7; overflow-x: auto; font-weight: 500; }
+        .no-messages { text-align: center; color: var(--text-muted); padding: 30px 20px; border: 2px dashed var(--border); border-radius: 10px; font-weight: 600; font-size: 15px; }
+        
         .auth-wall { display: none; text-align: center; }
-        .auth-wall h2 { font-size: 20px; color: var(--danger); margin-bottom: 10px; }
-        .auth-input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 15px; box-sizing: border-box; font-size: 15px; text-align: center; font-family: monospace; letter-spacing: 2px; }
-        .telegram-link-btn { display: inline-block; background: #24a1de; color: white; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px; margin-bottom: 20px; }
-        .telegram-link-btn:hover { background: #1d82b5; }
-        .verify-btn { width: 100%; background: var(--text-main); color: white; padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
+        .auth-wall h2 { font-size: 24px; color: var(--danger); margin-bottom: 10px; font-weight: 900; }
+        .auth-input { width: 100%; padding: 14px; border: 2px solid var(--border); border-radius: 8px; margin-bottom: 15px; box-sizing: border-box; font-size: 16px; text-align: center; font-family: monospace; letter-spacing: 2px; font-weight: bold; }
+        .auth-input:focus { outline: none; border-color: var(--accent); }
+        .telegram-link-btn { display: inline-block; background: #24a1de; color: white; text-decoration: none; padding: 14px 24px; border-radius: 8px; font-weight: 700; font-size: 16px; margin-bottom: 20px; font-family: 'Cairo', sans-serif; transition: 0.2s; }
+        .telegram-link-btn:hover { background: #1d82b5; transform: translateY(-2px); }
+        .verify-btn { width: 100%; background: var(--text-main); color: white; padding: 14px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; font-family: 'Cairo', sans-serif; font-size: 16px; transition: 0.2s; }
         .verify-btn:hover { background: #1e293b; }
 
-        .seo-section { max-width: 650px; width: 100%; margin-top: 40px; color: var(--text-muted); font-size: 13px; line-height: 1.6; border-top: 1px solid var(--border); padding-top: 20px; }
-        .toast { position: fixed; bottom: 30px; background: var(--text-main); color: white; padding: 12px 24px; border-radius: 8px; font-size: 14px; display: none; z-index: 9999; }
+        .toast { position: fixed; bottom: 30px; background: var(--text-main); color: white; padding: 12px 24px; border-radius: 8px; font-size: 15px; font-weight: 700; display: none; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
     </style>
 </head>
 <body>
@@ -145,17 +142,16 @@ const HTML_FRONTEND = `
 <div class="container">
     <div id="appInterface">
         <div class="brand-icon-wrapper"><span class="brand-icon">✉️</span></div>
-        <h1>بريد 10 دقائق - بريد مؤقت سريع</h1>
-        <div class="subtitle">أنشئ إيميل وهمي مؤقت ولحظي لحماية خصوصيتك ومنع التتبع</div>
+        <h1>بريد 10 دقائق</h1>
+        <div class="subtitle">أنشئ بريداً مؤقتاً وحافظ على هويتك الرقمية</div>
         
         <div class="timer-box">
-            <span>الوقت المتبقي لصلاحية هذا البريد:</span>
+            <span>الصلاحية المتبقية:</span>
             <span class="timer-countdown" id="countdownClock">10:00</span>
-            <button class="extend-btn" onclick="extendTime()">+ تمديد 10 دقائق</button>
+            <button class="extend-btn" onclick="extendTime()">+ تمديد</button>
         </div>
 
-        <!-- تنبيه الإيميل المميز اللحظي -->
-        <div class="premium-alert" id="premiumAlert">✨ رائع! لقد حصلت على إيميل يحتوي على كلمة مفتاحية مميزة ونادرة اليوم!</div>
+        <div class="premium-alert" id="premiumAlert">✉️ رائع! تم تخصيص هذا البريد النادر لك.</div>
 
         <div class="email-box">
             <span class="email-text" id="emailAddress">جاري التجهيز...</span>
@@ -165,44 +161,34 @@ const HTML_FRONTEND = `
         <button class="refresh-btn" onclick="checkMessages()">تحديث صندوق الوارد 🔄</button>
 
         <div class="messages-list" id="messagesContainer">
-            <div class="no-messages">صندوق الوارد فارغ. يتحدث تلقائياً عند استقبال رسائل...</div>
+            <div class="no-messages">صندوق الوارد فارغ. بانتظار الرسائل...</div>
         </div>
     </div>
 
     <div id="authInterface" class="auth-wall">
-        <h2>انتهت الحصة المجانية المؤقتة! 🔒</h2>
-        <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">لقد استهلكت حصتك البالغة (5 إيميلات عشوائية). يمكنك الانتظار 6 ساعات لتتصفر الحصة تلقائياً، أو تفعيل حسابك فوراً وبدون حدود ومجاناً عبر البوت الخاص بنا:</p>
+        <h2>انتهت الحصة المجانية 🔒</h2>
+        <p style="color: var(--text-muted); font-size: 15px; margin-bottom: 20px; font-weight: 600;">لقد استنفدت (5 محاولات). لتفعيل الحساب المفتوح مجاناً، أرسل بريدك المؤقت إلى البوت للحصول على الرمز.</p>
         
-        <a href="https://t.me/EmailComLy_bot" target="_blank" class="telegram-link-btn">افتح بوت تليجرام واضغط Start 🤖</a>
+        <a href="https://t.me/EmailComLy_bot" target="_blank" class="telegram-link-btn">افتح البوت واضغط Start ✉️</a>
         
-        <input type="text" id="tgSecretToken" class="auth-input" placeholder="أدخل الرمز السري هنا (مثال: TG-XXXXXX)">
+        <input type="text" id="tgSecretToken" class="auth-input" placeholder="أدخل الرمز هنا (مثال: TG-XXXXXX)">
         <button class="verify-btn" onclick="verifyTelegramToken()">تفعيل الحساب اللامتناهي</button>
-        <p style="color: var(--text-muted); font-size: 11px; margin-top: 10px;">💡 تلميح: سيقوم المتصفح بحفظ رمزك تلقائياً لكي لا تضطر لإدخاله مجدداً.</p>
     </div>
-</div>
-
-<div class="seo-section">
-    <h3>ما هي خدمة بريد 10 دقائق وكيف تفيدك؟</h3>
-    <p>موقع <strong>Email.com.ly</strong> يقدم لك أفضل منصة لتوليد <strong>بريد مؤقت</strong> أو ما يعرف بـ <strong>بريد 10 دقائق</strong>. تتيح لك هذه الأداة تخطي عمليات التسجيل الإجبارية في المواقع والمنتدات دون الحاجة للكشف عن هويتك الحقيقية أو استقبال رسائل ترويجية مزعجة (سبام).</p>
 </div>
 
 <div class="toast" id="toastMessage"></div>
 
 <script>
     const domain = "@email.com.ly";
-    
-    // إدارة الحصة الزمنية (5 محاولات تنتهي كل 6 ساعات)
     let usageCount = parseInt(localStorage.getItem('tg_usage_count') || '0');
     let lastUsageTime = parseInt(localStorage.getItem('tg_last_usage_time') || '0');
     let isVipUser = localStorage.getItem('tg_user_vip') === 'true';
     let myEmail = sessionStorage.getItem('current_temp_email');
-    
     let timeLeft = parseInt(sessionStorage.getItem('timer_left') || '600'); 
     let timerInterval;
 
     function checkQuota() {
         const now = Date.now();
-        // إذا مرت 6 ساعات (21,600,000 مللي ثانية) يتم تصفير العداد تلقائياً
         if (now - lastUsageTime > 6 * 60 * 60 * 1000) {
             usageCount = 0;
             localStorage.setItem('tg_usage_count', '0');
@@ -219,23 +205,17 @@ const HTML_FRONTEND = `
             document.getElementById('authInterface').style.display = 'none';
             
             if (!myEmail) {
-                // جلب إيميل يحتوي على الكلمة المفتاحية الدوّارة من السيرفر الخلفي
                 try {
                     const res = await fetch('/api/generate-email');
                     const data = await res.json();
                     myEmail = data.email;
-                    
                     if(data.isPremium) {
                         document.getElementById('premiumAlert').style.display = 'block';
                         document.getElementById('emailAddress').classList.add('premium-active');
-                    } else {
-                        document.getElementById('premiumAlert').style.display = 'none';
-                        document.getElementById('emailAddress').classList.remove('premium-active');
                     }
                 } catch(e) {
                     myEmail = Math.random().toString(36).substring(2, 10) + domain;
                 }
-
                 sessionStorage.setItem('current_temp_email', myEmail);
                 timeLeft = 600;
                 sessionStorage.setItem('timer_left', timeLeft.toString());
@@ -273,13 +253,12 @@ const HTML_FRONTEND = `
     function extendTime() {
         timeLeft += 600;
         sessionStorage.setItem('timer_left', timeLeft.toString());
-        showToast('تم تمديد صلاحية البريد لـ 10 دقائق إضافية!');
+        showToast('تم تمديد الصلاحية!');
     }
 
     async function verifyTelegramToken() {
         const tokenInput = document.getElementById('tgSecretToken').value.trim();
-        if(!tokenInput) { alert('الرجاء إدخال الرمز القادم من البوت أولاً'); return; }
-
+        if(!tokenInput) return;
         try {
             const res = await fetch('/api/verify-token', {
                 method: 'POST',
@@ -287,18 +266,13 @@ const HTML_FRONTEND = `
                 body: JSON.stringify({ token: tokenInput })
             });
             const data = await res.json();
-            
             if (res.ok && data.success) {
                 localStorage.setItem('tg_user_vip', 'true');
                 isVipUser = true;
-                showToast('🚀 تم تفعيل الحساب اللامتناهي بنجاح مذهل!');
+                showToast('تم تفعيل الحساب بنجاح!');
                 initLayout();
-            } else {
-                alert(data.error || 'الرمز غير صحيح، تأكد منه داخل البوت');
-            }
-        } catch (err) {
-            alert('خطأ في الاتصال بالشبكة الفورية');
-        }
+            } else { alert(data.error || 'الرمز غير صحيح'); }
+        } catch (err) {}
     }
 
     function showToast(text) {
@@ -310,7 +284,7 @@ const HTML_FRONTEND = `
 
     function copyEmail() {
         navigator.clipboard.writeText(myEmail);
-        showToast('تم نسخ البريد الإلكتروني!');
+        showToast('تم النسخ!');
     }
 
     async function checkMessages() {
@@ -354,6 +328,7 @@ function generateSecretToken() {
 }
 
 async function sendTelegramMessage(botToken, chatId, text) {
+  if (!botToken) return;
   const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
   await fetch(url, {
     method: 'POST',
@@ -366,19 +341,6 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // سيو: خريطة الموقع
-    if (url.pathname === "/sitemap.xml") {
-      const sitemap = `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://email.com.ly/</loc><lastmod>${new Date().toISOString().split('T')[0]}</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url></urlset>`;
-      return new Response(sitemap, { headers: { "Content-Type": "application/xml; charset=UTF-8" } });
-    }
-
-    // سيو: ملف الروبوتات
-    if (url.pathname === "/robots.txt") {
-      const robots = `User-agent: *\nAllow: /\nDisallow: /api/\n\nSitemap: https://email.com.ly/sitemap.xml`;
-      return new Response(robots, { headers: { "Content-Type": "text/plain; charset=UTF-8" } });
-    }
-
-    // الويب هوك الخاص بتليجرام
     if (url.pathname === "/telegram-webhook" && request.method === "POST") {
       try {
         const update = await request.json();
@@ -388,6 +350,12 @@ export default {
         const userText = update.message.text.trim();
 
         if (userText.startsWith("/start")) {
+          const welcomeMsg = `*مرحباً بك في خدمة بريد 10 دقائق الآمنة!* ✉️\n\nللحصول على الرمز السري الخاص بك وتفعيل الحساب اللامتناهي مجاناً، يرجى *إرسال البريد الإلكتروني المؤقت* الذي ظهر لك في الموقع الآن للتحقق منه.`;
+          await sendTelegramMessage(env.TELEGRAM_TOKEN, chatId, welcomeMsg);
+          return new Response("OK");
+        }
+
+        if (userText.includes("@email.com.ly")) {
           let user = await env.DB.prepare("SELECT secret_token FROM users WHERE telegram_id = ?").bind(chatId).first();
           let secretToken;
 
@@ -399,32 +367,30 @@ export default {
             secretToken = user.secret_token;
           }
 
-          const msg = `*أهلاً بك في خدمة بريد 10 دقائق الآمنة!* 🔒\n\nإليك رمز التحقق الدائم الخاص بك:\n\`${secretToken}\`\n\nقم بنسخ الرمز وضعه في الموقع لتفعيل الاستخدام غير المحدود مدى الحياة مجاناً.`;
-          await sendTelegramMessage(env.TELEGRAM_TOKEN, chatId, msg);
+          const successMsg = `*✅ تم التحقق بنجاح! البريد حقيقي ومسجل.*\n\nإليك رمز التحقق الدائم الخاص بك لفتح الحظر واستخدام الموقع بلا حدود:\n\n\`${secretToken}\`\n\nقم بنسخ الرمز ولصقه في الصندوق المخصص في الموقع فوراً.`;
+          await sendTelegramMessage(env.TELEGRAM_TOKEN, chatId, successMsg);
+        } else {
+          const errorMsg = `*❌ عذراً، الرمز أو النص المرسل غير صحيح.*\n\nالرجاء إرسال البريد الإلكتروني المؤقت الخاص بك كاملاً (ينتهي بـ @email.com.ly) ليتم فحصه وإرسال كلمة السر الخاصة بك فوراً.`;
+          await sendTelegramMessage(env.TELEGRAM_TOKEN, chatId, errorMsg);
         }
+
         return new Response("OK");
       } catch (err) {
         return new Response("OK");
       }
     }
 
-    // توليد الإيميل بالاعتماد على الكلمة المفتاحية الدوّارة كل 10 محاولات كعداد عام
     if (url.pathname === "/api/generate-email") {
-      // جلب العداد الكلي للإيميلات المولدة لتحديد الكلمة الدوّارة
-      // سنقوم بمحاكاة رقم عشوائي أو قراءة من قاعدة البيانات؛ للحفاظ على الخفة سنعتمد العداد على مستوى الـ KV أو رقم عشوائي ذكي يختار من المصفوفة
       const index = Math.floor(Math.random() * PREMIUM_KEYWORDS.length);
       const keyword = PREMIUM_KEYWORDS[index];
-      const randomSuffix = Math.floor(1000 + Math.random() * 9000); // 4 أرقام عشوائية للحماية
-      
+      const randomSuffix = Math.floor(1000 + Math.random() * 9000); 
       const generatedEmail = `${keyword}${randomSuffix}@email.com.ly`;
       
-      // نعتبر الإيميل مميزاً دائماً لجلب التفاعل النفسي الرائع للزائر
       return new Response(JSON.stringify({ email: generatedEmail, isPremium: true }), {
         headers: { "Content-Type": "application/json" }
       });
     }
 
-    // التحقق من الرمز القادم من الواجهة الأمامية
     if (url.pathname === "/api/verify-token" && request.method === "POST") {
       try {
         const { token } = await request.json();
@@ -443,7 +409,6 @@ export default {
       }
     }
 
-    // استقبال الرسائل لصندوق الوارد
     if (url.pathname === "/api/messages") {
       const email = url.searchParams.get("email");
       if (!email) return new Response(JSON.stringify({ error: "Missing email" }), { status: 400 });
@@ -455,11 +420,6 @@ export default {
     }
 
     return new Response(HTML_FRONTEND, { headers: { "Content-Type": "text/html; charset=UTF-8" } });
-  },
-
-  async scheduled(event, env, ctx) {
-    const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
-    await env.DB.prepare("DELETE FROM messages WHERE created_at < ?").run(twentyFourHoursAgo);
   },
 
   async email(message, env, ctx) {
