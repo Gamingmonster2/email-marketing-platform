@@ -6,3 +6,6 @@ compatibility_date = "2026-07-06"
 binding = "DB"
 database_name = "email_db"
 database_id = "c0f2b878-a36b-43bd-853b-0de8cb2374aa"
+
+[email]
+enabled = true
